@@ -19,8 +19,8 @@ l-loader.bin: start.o $(BL1)
 
 ptable.img:
 	for ptable in $(PTABLE_LST); do \
-		sudo PTABLE=$${ptable} bash -x generate_ptable.sh;\
-		python gen_loader.py -o ptable-$${ptable}.img --img_prm_ptable=prm_ptable.img;\
+		PTABLE=$${ptable} SECTOR_SIZE=512 bash -x generate_ptable.sh;\
+		mv prm_ptable.img ptable-$${ptable}.img;\
 	done
 
 clean:
