@@ -4,6 +4,8 @@ endif
 TARGET_PREBUILT_KERNEL := device/linaro/hikey-kernel/Image-dtb-$(TARGET_KERNEL_USE)
 TARGET_PREBUILT_DTB := device/linaro/hikey-kernel/hi6220-hikey.dtb-$(TARGET_KERNEL_USE)
 
+HIKEY_USE_DRM_HWCOMPOSER := false
+
 ifeq ($(TARGET_KERNEL_USE), 3.18)
   TARGET_FSTAB := fstab.hikey-$(TARGET_KERNEL_USE)
   HIKEY_USE_LEGACY_TI_BLUETOOTH := true
@@ -12,6 +14,7 @@ else
     HIKEY_USE_LEGACY_TI_BLUETOOTH := true
   else
     HIKEY_USE_LEGACY_TI_BLUETOOTH := false
+    HIKEY_USE_DRM_HWCOMPOSER := true
   endif
   TARGET_FSTAB := fstab.hikey
 endif

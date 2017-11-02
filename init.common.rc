@@ -33,6 +33,9 @@ on post-fs
     chmod 0666 /dev/ion
     chmod 0666 /dev/graphics/fb0
 
+    chown graphics graphics /sys/kernel/debug/sync/sw_sync
+    chmod 777 /sys/kernel/debug/sync/sw_sync
+
 # fake some battery state
     setprop status.battery.state Slow
     setprop status.battery.level 5
@@ -44,6 +47,10 @@ on post-fs
 
 # Set supported opengles version
     setprop ro.opengles.version 196608
+    setprop ro.hardware.hwcomposer drm
+    setprop debug.sf.no_hw_vsync 1
+    setprop hwc.drm.use_framebuffer_target 1
+    setprop hwc.drm.use_overlay_planes 0
 
 # If an app forces screen rotation, revert it once the apps closes
     setprop persist.demo.rotationlock 1

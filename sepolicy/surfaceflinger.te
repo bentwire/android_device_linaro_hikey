@@ -1,1 +1,5 @@
 hal_server_domain(surfaceflinger, hal_graphics_allocator)
+type debugfs_swsync, debugfs_type, fs_type;
+
+allow surfaceflinger debugfs_swsync:file { open read write ioctl };
+
