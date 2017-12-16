@@ -16,7 +16,6 @@
 # limitations under the License.
 
 $(info gralloc for hikey960)
-GRALLOC_FB_SWAP_RED_BLUE := 0
 GRALLOC_DEPTH := GRALLOC_32_BITS
 
 # GPU support for AFBC 1.0
@@ -51,3 +50,10 @@ GRALLOC_DISP_W=0
 GRALLOC_DISP_H=0
 # Vsync backend(not used)
 GRALLOC_VSYNC_BACKEND=default
+
+ifeq ($(HIKEY_USE_DRM_HWCOMPOSER), true)
+ GRALLOC_FB_SWAP_RED_BLUE := 1
+ GRALLOC_USE_ION_DMA_HEAP=1
+ GRALLOC_DISABLE_FRAMEBUFFER_HAL=1
+endif
+
