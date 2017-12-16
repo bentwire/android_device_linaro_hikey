@@ -40,6 +40,10 @@
 #include <linux/ion.h>
 #include <ion/ion.h>
 
+#define ION_CMA 	(char*)"linux,cma"
+#define ION_SYSTEM	(char*)"ion_system_heap"
+
+
 static void init_afbc(uint8_t *buf, uint64_t internal_format, int w, int h)
 {
 	uint32_t n_headers = (w * h) / 64;
@@ -150,13 +154,12 @@ static ion_user_handle_t alloc_from_ion_heap(int ion_fd, size_t size, unsigned i
 	return ion_hnd;
 }
 
-static int find_system_heap_id(int ion_client)
+static int find_heap_id(int ion_client, char* heap_name)
 {
-	int i, ret, cnt, system_heap_id = -1;
+	int i, ret, cnt, heap_id = -1;
 	struct ion_heap_data *data;
 
 	ret = ion_query_heap_cnt(ion_client, &cnt);
-
 	if (ret)
 	{
 		AERR("ion count query failed with %s", strerror(errno));
@@ -178,21 +181,21 @@ static int find_system_heap_id(int ion_client)
 	else
 	{
 		for (i = 0; i < cnt; i++) {
-			if (strcmp(data[i].name, "ion_system_heap") == 0) {
-				system_heap_id = data[i].heap_id;
+			if (strcmp(data[i].name, heap_name) == 0) {
+				heap_id = data[i].heap_id;
 				break;
 			}
 		}
 
 		if (i == cnt)
 		{
-			AERR("No System Heap Found amongst %d heaps\n", cnt);
-			system_heap_id = -1;
+			AERR("No %s Found amongst %d heaps\n", heap_name, cnt);
+			heap_id = -1;
 		}
 	}
 
 	free(data);
-	return system_heap_id;
+	return heap_id;
 }
 
 unsigned int pick_ion_heap(int usage)
@@ -307,8 +310,11 @@ int alloc_backend_alloc(alloc_device_t* dev, size_t size, int usage, buffer_hand
 	}
 	else
 	{
-		/* Support only System heap to begin with */
-		ret = ion_alloc_fd(m->ion_client, size, 0, 1 << m->system_heap_id, 0, &(shared_fd));
+		heap_mask = pick_ion_heap(usage);
+		if (heap_mask == ION_HEAP_TYPE_DMA_MASK)
+			ret = ion_alloc_fd(m->ion_client, size, 0, 1 << m->cma_heap_id, 0, &(shared_fd));
+		else
+			ret = ion_alloc_fd(m->ion_client, size, 0, 1 << m->system_heap_id, 0, &(shared_fd));
 		if (ret != 0)
 		{
 			AERR("Failed to ion_alloc_fd from ion_client:%d", m->ion_client);
@@ -418,7 +424,8 @@ int alloc_backend_open(alloc_device_t *dev)
 
 	if (!m->gralloc_legacy_ion)
 	{
-		m->system_heap_id = find_system_heap_id(m->ion_client);
+		m->cma_heap_id = find_heap_id(m->ion_client, ION_CMA);
+		m->system_heap_id = find_heap_id(m->ion_client, ION_SYSTEM);
 		if (m->system_heap_id < 0)
 		{
 			ion_close(m->ion_client);
