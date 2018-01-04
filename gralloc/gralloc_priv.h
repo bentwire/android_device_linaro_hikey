@@ -164,7 +164,10 @@ struct private_handle_t
 	int     size;
 	int     width;
 	int     height;
-	int     format;
+	union {
+		int     format;
+		int	req_format; /* same name as gralloc960 */
+	};
 	int     stride;
 	union
 	{
@@ -174,6 +177,7 @@ struct private_handle_t
 	int     lockState;
 	int     writeOwner;
 	int     pid;
+	int	byte_stride;
 
 	mali_gralloc_yuv_info yuv_info;
 
@@ -190,7 +194,6 @@ struct private_handle_t
 #if GRALLOC_ARM_DMA_BUF_MODULE
 	ion_user_handle_t ion_hnd_UNUSED;
 #endif
-
 #if GRALLOC_ARM_DMA_BUF_MODULE
 #define GRALLOC_ARM_NUM_FDS 1
 #else
